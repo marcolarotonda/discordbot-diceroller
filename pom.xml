@@ -70,4 +70,12 @@
         </repository>
     </repositories>
 
+    <distributionManagement>
+        <repository>
+            <id>repsy</id>
+            <name>repsy-diceroller</name>
+            <url>https://repo.repsy.io/mvn/marcolarotonda/diceroller</url>
+        </repository>
+    </distributionManagement>
+
 </project>
