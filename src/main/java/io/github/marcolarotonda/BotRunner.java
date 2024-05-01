@@ -1,13 +1,17 @@
 package io.github.marcolarotonda;
 
 import io.github.marcolarotonda.discordbotdiceroller.service.Listener;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
+import net.dv8tion.jda.api.entities.Icon;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Service;
+
+import java.io.File;
 
 @Service
 public class BotRunner implements ApplicationRunner {
@@ -26,9 +30,16 @@ public class BotRunner implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        JDABuilder.createLight(token)
+        JDA jda = JDABuilder.createLight(token)
                 .setStatus(OnlineStatus.ONLINE)
                 .addEventListeners(listener)
                 .build();
+
+        jda.getSelfUser()
+                .getManager()
+                .reset()
+                .setAvatar(Icon.from(new File("src/main/resources/dice-logo.webp")))
+                .queue();
+
     }
 }
