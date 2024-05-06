@@ -5,7 +5,8 @@ import jakarta.annotation.Nonnull;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.dv8tion.jda.api.requests.restaction.CommandCreateAction;
+import net.dv8tion.jda.api.interactions.commands.build.Commands;
+import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,12 +24,15 @@ public class Listener extends ListenerAdapter {
 
     @Override
     public void onGuildReady(@Nonnull GuildReadyEvent event) {
-        for (Command command : commandList) {
-            CommandCreateAction commandCreateAction = event.getGuild().upsertCommand(command.getName(), command.getDescription());
-            command.getOptions().ifPresentOrElse(
-                    options -> commandCreateAction.addOptions(options).queue(),
-                    commandCreateAction::queue);
-        }
+        List<SlashCommandData> slashCommands = commandList.stream()
+                .map(command -> {
+                    SlashCommandData slash = Commands.slash(command.getName(), command.getDescription());
+                    command.getOptions().ifPresent(slash::addOptions);
+                    return slash;
+                })
+                .toList();
+
+        event.getGuild().updateCommands().addCommands(slashCommands).queue();
     }
 
 

@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,9 +20,12 @@ import java.util.Optional;
 public class RollCmd implements Command {
 
     private final DiceService diceService;
+    private final int defaultDie;
 
     @Autowired
-    public RollCmd(DiceService diceService) {
+    public RollCmd(@Value("${application.default-die}") int defaultDie,
+            DiceService diceService) {
+        this.defaultDie = defaultDie;
         this.diceService = diceService;
     }
 
@@ -37,7 +41,7 @@ public class RollCmd implements Command {
 
     @Override
     public Optional<List<OptionData>> getOptions() {
-        OptionData diceType = new OptionData(OptionType.INTEGER, "dice", "sides of the dice to roll", true)
+        OptionData diceType = new OptionData(OptionType.INTEGER, "dice", "sides of the dice to roll", false)
                 .addChoice("4", 4)
                 .addChoice("6", 6)
                 .addChoice("8", 8)
@@ -66,7 +70,12 @@ public class RollCmd implements Command {
 
     @Override
     public void execute(SlashCommandInteractionEvent event) {
-        int dice = event.getOption("dice").getAsInt();
+        int dice;
+        try {
+            dice = event.getOption("dice").getAsInt();
+        } catch (NullPointerException e) {
+            dice = this.defaultDie;
+        }
         DiceType diceType = DiceType.valueOf(String.format("D%d", dice));
 
         int modifier;
